@@ -2,19 +2,47 @@
 package main
 
 import (
-	"os"
+	"./utils"
+	"fmt"
+	"github.com/pivotal-golang/bytefmt"
+	"time"
 )
 
 func main() {
-	homePath := os.Getenv("HOME")
 
-	// Text size
-	dpi := 96
-	text_width := 5 * (dpi / 96)
+	// Cpu bw 1s
+	// memory 3s
+	// time, disc 30s
+	// pacman + weather 1h
 
-	monitor := os.Args[0]
-	location := 12886294
+	var cpu string
+	var bws string
+	var mu string
+	go func() {
+		var previdle, prevtotal int
+		previdle, prevtotal = 0, 0
 
-	tags := [5]rune{'x', 'x', 'x', 'x', 'x'}
+		var bw utils.Bandwidth
+		bw.New("eno1")
 
+		for {
+			cp := utils.GetCpuLoad(&previdle, &prevtotal)
+			cpu = fmt.Sprintf("^fg(#ffffff)Cpu: %d%%", cp)
+			bws = fmt.Sprintf("^fg(#ffffff)DL: %s UL:%s", bytefmt.ByteSize(bw.Download), bytefmt.ByteSize(bw.Upload))
+			time.Sleep(time.Second)
+		}
+	}()
+
+	go func() {
+		for {
+			mem := utils.GetMemUsage()
+			mu = fmt.Sprintf("^fg(#ffffff)Mem: %d%%", mem)
+			time.Sleep(time.Second * 3)
+		}
+	}()
+
+	for {
+		fmt.Println(cpu + mu + bws)
+		time.Sleep(time.Millisecond * 300)
+	}
 }
