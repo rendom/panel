@@ -2,29 +2,71 @@ package utils
 
 import (
 	"bufio"
-	"github.com/golang/glog"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/golang/glog"
 )
 
-func getActiveWindowName() string {
-	out, err := exec.Command("bash", "-c", "xprop -id $(xprop -root _NET_ACTIVE_WINDOW | cut -d' ' -f5) _NET_WM_NAME | grep -oP '(?<=\")(.+)(?=\")'").Output()
-	if err != nil {
-		glog.Fatalf("stderr: %s", err)
-		return "No title"
-	}
-	return string(out)
+const (
+	TAGICON    string = "x"
+	COLOR1     string = "#000000"
+	COLOR2     string = "#212121"
+	COLOR3     string = "#802828"
+	COLOR4     string = "#9ca554"
+	COLOR5     string = "#ddb62b"
+	COLOR6     string = "#1e6a9a"
+	TIMEFORMAT string = "06/01/02 15:04"
+)
+
+func GetDatetime() string {
+	t := time.Now().Local()
+	return t.Format(TIMEFORMAT)
 }
 
-func GetHlwmtags(monitor string) {
-	//	out, err := exec.Command("herbstclient", "tag_status", monitor).Output()
-	//	if err != nil {
-	//		glog.Fatalf("hlc stderr %s", err)
-	//	}
+func GetActiveWindowName() string {
+	out, err := exec.Command("bash", "-c", "xprop -id $(xprop -root _NET_ACTIVE_WINDOW | cut -d' ' -f5) _NET_WM_NAME | grep -oP '(?<=\")(.+)(?=\")'").Output()
+	if err != nil {
+		return "No title"
+	} else {
+		return string(out[:len(out)-1])
+	}
+}
 
-	//	tags := strings.Split(string(out), "\t")
+func GetHlwmtags(monitor string) (output string) {
+	out, err := exec.Command("herbstclient", "tag_status", monitor).Output()
+	if err != nil {
+		glog.Fatalf("hlc stderr %s", err)
+	}
+
+	tags := strings.Split(string(out), "\t")
+
+	for _, v := range tags {
+		if v == "" {
+			continue
+		}
+		switch v[:1] {
+		case "%":
+			output = output + "^fg(" + COLOR6 + ")" + TAGICON + " ^bg()"
+		case "#":
+			output = output + "^fg(" + COLOR5 + ")" + TAGICON + " ^bg()"
+		case "+":
+			output = output + "^fg(" + COLOR5 + ")" + TAGICON + " ^bg()"
+		case "-":
+			output = output + "^fg(" + COLOR5 + ")" + TAGICON + " ^bg()"
+		case ":":
+			output = output + "^fg(" + COLOR3 + ")" + TAGICON + " ^bg()"
+		case "!":
+			output = output + "^fg(" + COLOR5 + ")" + TAGICON + " ^bg()"
+		case ".":
+			output = output + "^fg(" + COLOR5 + ")" + TAGICON + " ^bg()"
+		}
+	}
+
+	return
 }
 
 func getPacmanUpdatesCount() int {
