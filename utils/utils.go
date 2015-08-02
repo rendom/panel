@@ -184,7 +184,7 @@ func GetMemUsage() int {
 			memtotal = v
 		}
 	}
-
+	memused = memtotal - memused
 	mp := (float64(memused) / float64(memtotal)) * 100
 	return int(mp)
 }
