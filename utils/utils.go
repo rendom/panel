@@ -117,26 +117,20 @@ func GetCpuLoad(previdle *int, prevtotal *int) int {
 	scanner := bufio.NewScanner(reader)
 
 	idle, total := 0, 0
-	for scanner.Scan() {
+	if scanner.Scan() {
 		row := scanner.Bytes()
 		c := strings.Split(string(row), " ")
-		if string(c[0]) == "cpu" {
-			for i := 2; i < len(c); i++ {
-				if c[i] == "" {
-					continue
-				}
-				v, err := strconv.Atoi(c[i])
-				if err != nil {
-					glog.Fatalf("Failed to convert str to int: %s, err", err)
-					return -1
-				}
-
-				total = total + v
-				if i == 5 {
-					idle = v
-				}
+		for i := 2; i < len(c); i++ {
+			v, err := strconv.Atoi(c[i])
+			if err != nil {
+				glog.Fatalf("Failed to convert str to int: %s, err", err)
+				return -1
 			}
-			break
+
+			total = total + v
+			if i == 5 {
+				idle = v
+			}
 		}
 	}
 
@@ -166,7 +160,6 @@ func GetMemUsage() int {
 
 	for scanner.Scan() {
 		row := scanner.Bytes()
-		//c := strings.Split(string(row), "       ")
 		c := strings.Fields(string(row))
 		switch c[0] {
 		case "MemFree:", "Buffers:", "Cached:":
@@ -182,6 +175,9 @@ func GetMemUsage() int {
 				glog.Fatalf("Failed to convert str to int: %s", err)
 			}
 			memtotal = v
+		}
+		if c[0] == "Cached:" {
+			break
 		}
 	}
 	memused = memtotal - memused
