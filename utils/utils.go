@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
@@ -21,6 +22,11 @@ const (
 	COLOR6     string = "#1e6a9a"
 	TIMEFORMAT string = "06/01/02 15:04"
 )
+
+func formatStr(str string, color string) string {
+	//	return fmt.Sprintf("^fg(%s)%s^bg()", color, str)
+	return fmt.Sprintf("%%{F%s}%s", color, str)
+}
 
 func GetDatetime() string {
 	t := time.Now().Local()
@@ -50,19 +56,19 @@ func GetHlwmtags(monitor string) (output string) {
 		}
 		switch v[:1] {
 		case "%":
-			output = output + "^fg(" + COLOR6 + ")" + TAGICON + " ^bg()"
+			output = output + formatStr(TAGICON, COLOR6)
 		case "#":
-			output = output + "^fg(" + COLOR5 + ")" + TAGICON + " ^bg()"
+			output = output + formatStr(TAGICON, COLOR5)
 		case "+":
-			output = output + "^fg(" + COLOR5 + ")" + TAGICON + " ^bg()"
+			output = output + formatStr(TAGICON, COLOR5)
 		case "-":
-			output = output + "^fg(" + COLOR5 + ")" + TAGICON + " ^bg()"
+			output = output + formatStr(TAGICON, COLOR5)
 		case ":":
-			output = output + "^fg(" + COLOR3 + ")" + TAGICON + " ^bg()"
+			output = output + formatStr(TAGICON, COLOR3)
 		case "!":
-			output = output + "^fg(" + COLOR5 + ")" + TAGICON + " ^bg()"
+			output = output + formatStr(TAGICON, COLOR5)
 		case ".":
-			output = output + "^fg(" + COLOR5 + ")" + TAGICON + " ^bg()"
+			output = output + formatStr(TAGICON, COLOR5)
 		}
 	}
 

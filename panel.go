@@ -27,10 +27,20 @@ var (
 )
 
 func formatStr(str string, color string) string {
-	return fmt.Sprintf("^fg(%s)%s^bg()", color, str)
+	//	return fmt.Sprintf("^fg(%s)%s^bg()", color, str)
+	return fmt.Sprintf("%%{F%s}%s", color, str)
 }
 
-func output() string {
+func lemonbarOutput() string {
+	ws := utils.GetHlwmtags("0")
+	left := fmt.Sprintf("%s %s", ws, wTitle)
+	right := fmt.Sprintf("%%{r}%s %s %s %s %s", cpu, memory, disk, bwStr, datetime)
+
+	return fmt.Sprintf("%s %s\n", left, right)
+
+}
+
+func dzenOutput() string {
 	var scr_width = 1920
 	var dpi = 96
 	var text_width = 5 * (dpi / 96)
@@ -118,7 +128,7 @@ func main() {
 			bwStr = formatStr(row[2], "#FFFFFF")
 		}
 
-		fmt.Print(output())
+		fmt.Print(lemonbarOutput())
 	}
 
 }
