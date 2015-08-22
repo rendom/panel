@@ -3,6 +3,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
 	"os/exec"
@@ -24,11 +25,18 @@ var (
 	memory    string
 	previdle  int
 	prevtotal int
+
+	dzen    bool
+	monitor int
 )
 
 func formatStr(str string, color string) string {
-	//	return fmt.Sprintf("^fg(%s)%s^bg()", color, str)
-	return fmt.Sprintf("%%{F%s}%s", color, str)
+	if dzen {
+		return fmt.Sprintf("^fg(%s)%s^bg()", color, str)
+	} else {
+		// Lemonbar format
+		return fmt.Sprintf("%%{F%s}%s", color, str)
+	}
 }
 
 func lemonbarOutput() string {
@@ -71,10 +79,32 @@ func interval(fn func(), t time.Duration) {
 }
 
 func main() {
-	// Cpu bw 1s
-	// memory 3s
-	// time, disc 30s
-	// pacman + weather 1h
+	flag.BoolVar(&dzen, "dzen", false, "Dzen output?")
+	flag.IntVar(&monitor, "monitor", 0, "Monitor 0 = Worker, Monitor 1+ = Just listen")
+	flag.Parse()
+
+	if monitor == 0 {
+		previdle, prevtotal := 0, 0
+		// CPU/BW/MEMORY
+		var bw utils.Bandwidth
+		bw.New("eno1")
+		interval(func() {
+			c := fmt.Sprintf("Cpu: %d%%", utils.GetCpuLoad(&previdle, &prevtotal))
+			m := fmt.Sprintf("Mem: %d%%", utils.GetMemUsage())
+			sendEvent("cpu", c)
+			sendEvent("bw", fmt.Sprintf("D: %s U: %s", bytefmt.ByteSize(bw.Download), bytefmt.ByteSize(bw.Upload)))
+			sendEvent("memory", m)
+		}, time.Second*5)
+
+		// time, disk
+		interval(func() {
+			dspace := utils.GetDiskSpace()
+			datetime := utils.GetDatetime()
+			sendEvent("datetime", datetime)
+			sendEvent("disk", dspace)
+		}, time.Second*30)
+
+	}
 
 	cmd := exec.Command("herbstclient", "--idle")
 	stdout, err := cmd.StdoutPipe()
@@ -86,27 +116,6 @@ func main() {
 	if err := cmd.Start(); err != nil {
 		log.Fatal(err)
 	}
-
-	previdle, prevtotal := 0, 0
-
-	// CPU/BW/MEMORY
-	var bw utils.Bandwidth
-	bw.New("eno1")
-	interval(func() {
-		c := fmt.Sprintf("Cpu: %d%%", utils.GetCpuLoad(&previdle, &prevtotal))
-		m := fmt.Sprintf("Mem: %d%%", utils.GetMemUsage())
-		sendEvent("cpu", c)
-		sendEvent("bw", fmt.Sprintf("D: %s U: %s", bytefmt.ByteSize(bw.Download), bytefmt.ByteSize(bw.Upload)))
-		sendEvent("memory", m)
-	}, time.Second*5)
-
-	// time, disk
-	interval(func() {
-		dspace := utils.GetDiskSpace()
-		datetime := utils.GetDatetime()
-		sendEvent("datetime", datetime)
-		sendEvent("disk", dspace)
-	}, time.Second*30)
 
 	reader := bufio.NewReader(stdout)
 	scanner := bufio.NewScanner(reader)
@@ -128,7 +137,10 @@ func main() {
 			bwStr = formatStr(row[2], "#FFFFFF")
 		}
 
-		fmt.Print(lemonbarOutput())
+		if dzen {
+			fmt.Print(dzenOutput())
+		} else {
+			fmt.Print(lemonbarOutput())
+		}
 	}
-
 }
