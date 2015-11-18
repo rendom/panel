@@ -62,11 +62,11 @@ func GetHlwmtags(monitor string) (output string) {
 		case "+":
 			output = output + formatStr(TAGICON, COLOR5)
 		case "-":
-			output = output + formatStr(TAGICON, COLOR5)
+			output = output + formatStr(TAGICON, COLOR6)
 		case ":":
 			output = output + formatStr(TAGICON, COLOR3)
 		case "!":
-			output = output + formatStr(TAGICON, COLOR5)
+			output = output + formatStr(TAGICON, COLOR2)
 		case ".":
 			output = output + formatStr(TAGICON, COLOR5)
 		}

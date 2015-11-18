@@ -122,6 +122,9 @@ func main() {
 
 	for scanner.Scan() {
 		row := strings.Split(scanner.Text(), "\t")
+		if len(row) < 3 {
+			continue
+		}
 		switch row[0] {
 		case "focus_changed", "window_title_changed":
 			wTitle = formatStr(row[2], "#FFFFFF")
