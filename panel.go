@@ -34,16 +34,18 @@ var (
 
 const (
 	TAGICON    string = "x"
-	COLOR1     string = "#000000"
-	COLOR2     string = "#212121"
-	COLOR3     string = "#802828"
-	COLOR4     string = "#9ca554"
-	COLOR5     string = "#ddb62b"
-	COLOR6     string = "#1e6a9a"
+	BLACK      string = "#282a2e"
+	GREY       string = "#373b41"
+	RED        string = "#cc6666"
+	GREEN      string = "#b5bd68"
+	YELLOW     string = "#de935f"
+	BLUE       string = "#81A2BE"
+	CYAN       string = "#8abeb7"
+	WHITE      string = "#c5c8c6"
 	TIMEFORMAT string = "06/01/02 15:04"
 )
 
-func formatStr(str string, color string) string {
+func colorStr(str string, color string) string {
 	if dzen {
 		return fmt.Sprintf("^fg(%s)%s^bg()", color, str)
 	} else {
@@ -90,19 +92,19 @@ func getHlwmtags(monitor string) (output string) {
 		}
 		switch v[:1] {
 		case "%":
-			output = output + formatStr(TAGICON, COLOR6)
+			output = output + " " + colorStr(TAGICON, BLUE)
 		case "#":
-			output = output + formatStr(TAGICON, COLOR5)
+			output = output + " " + colorStr(TAGICON, RED)
 		case "+":
-			output = output + formatStr(TAGICON, COLOR5)
+			output = output + " " + colorStr(TAGICON, RED)
 		case "-":
-			output = output + formatStr(TAGICON, COLOR6)
+			output = output + " " + colorStr(TAGICON, GREY)
 		case ":":
-			output = output + formatStr(TAGICON, COLOR3)
+			output = output + " " + colorStr(TAGICON, RED)
 		case "!":
-			output = output + formatStr(TAGICON, COLOR2)
+			output = output + " " + colorStr(TAGICON, GREY)
 		case ".":
-			output = output + formatStr(TAGICON, COLOR5)
+			output = output + " " + colorStr(TAGICON, YELLOW)
 		}
 	}
 
@@ -131,12 +133,16 @@ func getColor(max float64, val float64) string {
 
 	p := val / max
 	if p >= 0.8 {
-		return "#802828"
+		return RED
 	} else if p >= 0.5 {
-		return "#ddb62b"
+		return YELLOW
 	} else {
-		return "#9ca554"
+		return GREEN
 	}
+}
+
+func labelStr(label string, value string) string {
+	return colorStr(label, BLUE) + value
 }
 
 func main() {
@@ -149,12 +155,12 @@ func main() {
 		interval(func() {
 			v, err := gmem.VirtualMemory()
 			if err == nil {
-				sendEvent("memory", formatStr(fmt.Sprintf("mem: %.0f%%", v.UsedPercent), getColor(100, v.UsedPercent)))
+				sendEvent("memory", labelStr("mem:", colorStr(fmt.Sprintf("%.0f%%", v.UsedPercent), getColor(100, v.UsedPercent))))
 			}
 
 			c, err := gcpu.Percent(0, false)
 			if err == nil {
-				sendEvent("cpu", formatStr(fmt.Sprintf("cpu: %.0f%%", c[0]), getColor(100, c[0])))
+				sendEvent("cpu", labelStr("cpu:", colorStr(fmt.Sprintf("%.0f%%", c[0]), getColor(100, c[0]))))
 			}
 		}, time.Second*5)
 
@@ -172,7 +178,7 @@ func main() {
 				oldUp = ios[0].BytesSent
 				upColor := getColor(1000000.0, float64(up))
 
-				sendEvent("bw", formatStr("D:"+bytefmt.ByteSize(down), downColor)+formatStr(" U:"+bytefmt.ByteSize(up), upColor))
+				sendEvent("bw", labelStr("D:", colorStr(bytefmt.ByteSize(down), downColor))+labelStr(" U:", colorStr(bytefmt.ByteSize(up), upColor)))
 			}
 		}, time.Second*1)
 		// time, disk
@@ -207,17 +213,17 @@ func main() {
 		}
 		switch row[0] {
 		case "focus_changed", "window_title_changed":
-			wTitle = formatStr(row[2], "#FFFFFF")
+			wTitle = colorStr(row[2], WHITE)
 		case "datetime":
-			datetime = formatStr(row[2], "#FFFFFF")
+			datetime = colorStr(row[2], WHITE)
 		case "disk":
-			disk = formatStr(row[2], "#FFFFFF")
+			disk = colorStr(row[2], WHITE)
 		case "memory":
-			memory = formatStr(row[2], "#FFFFFF")
+			memory = colorStr(row[2], WHITE)
 		case "cpu":
-			cpu = formatStr(row[2], "#FFFFFF")
+			cpu = colorStr(row[2], WHITE)
 		case "bw":
-			bwStr = formatStr(row[2], "#FFFFFF")
+			bwStr = colorStr(row[2], WHITE)
 		}
 
 		if dzen {
