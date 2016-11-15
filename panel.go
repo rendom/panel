@@ -8,6 +8,7 @@ import (
 	"log"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -55,7 +56,7 @@ func colorStr(str string, color string) string {
 }
 
 func lemonbarOutput() string {
-	ws := getHlwmtags("0")
+	ws := getHlwmtags(strconv.Itoa(monitor))
 	left := fmt.Sprintf("%s %s", ws, wTitle)
 	right := fmt.Sprintf("%%{r}%s %s %s %s %s", cpu, memory, disk, bwStr, datetime)
 
@@ -69,7 +70,7 @@ func dzenOutput() string {
 	var text_width = 5 * (dpi / 96)
 
 	re := regexp.MustCompile("/\\^[^(]*[^)]*\\)/m")
-	ws := getHlwmtags("0")
+	ws := getHlwmtags(strconv.Itoa(monitor))
 	left := fmt.Sprintf("%s %s", ws, wTitle)
 	right := fmt.Sprintf("%s %s %s %s %s", cpu, memory, disk, bwStr, datetime)
 	rtext := re.ReplaceAllString(right, "")
@@ -94,17 +95,17 @@ func getHlwmtags(monitor string) (output string) {
 		case "%":
 			output = output + " " + colorStr(TAGICON, BLUE)
 		case "#":
-			output = output + " " + colorStr(TAGICON, RED)
+			output = output + " " + colorStr(TAGICON, BLUE)
 		case "+":
-			output = output + " " + colorStr(TAGICON, RED)
+			output = output + " " + colorStr(TAGICON, YELLOW)
 		case "-":
 			output = output + " " + colorStr(TAGICON, GREY)
 		case ":":
-			output = output + " " + colorStr(TAGICON, RED)
+			output = output + " " + colorStr(TAGICON, GREY)
 		case "!":
 			output = output + " " + colorStr(TAGICON, GREY)
 		case ".":
-			output = output + " " + colorStr(TAGICON, YELLOW)
+			output = output + " " + colorStr(TAGICON, BLACK)
 		}
 	}
 
