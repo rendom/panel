@@ -142,7 +142,7 @@ func getColor(max float64, val float64) string {
 }
 
 func labelStr(label string, value string) string {
-	return colorStr(label, BLUE) + value
+	return colorStr(label, BLUE) + ":" + value
 }
 
 func main() {
@@ -155,12 +155,12 @@ func main() {
 		interval(func() {
 			v, err := gmem.VirtualMemory()
 			if err == nil {
-				sendEvent("memory", labelStr("mem:", colorStr(fmt.Sprintf("%.0f%%", v.UsedPercent), getColor(100, v.UsedPercent))))
+				sendEvent("memory", labelStr("mem", colorStr(fmt.Sprintf("%.0f%%", v.UsedPercent), getColor(100, v.UsedPercent))))
 			}
 
 			c, err := gcpu.Percent(0, false)
 			if err == nil {
-				sendEvent("cpu", labelStr("cpu:", colorStr(fmt.Sprintf("%.0f%%", c[0]), getColor(100, c[0]))))
+				sendEvent("cpu", labelStr("cpu", colorStr(fmt.Sprintf("%.0f%%", c[0]), getColor(100, c[0]))))
 			}
 		}, time.Second*5)
 
@@ -178,7 +178,7 @@ func main() {
 				oldUp = ios[0].BytesSent
 				upColor := getColor(1000000.0, float64(up))
 
-				sendEvent("bw", labelStr("D:", colorStr(bytefmt.ByteSize(down), downColor))+labelStr(" U:", colorStr(bytefmt.ByteSize(up), upColor)))
+				sendEvent("bw", labelStr("d", colorStr(bytefmt.ByteSize(down), downColor))+labelStr(" u", colorStr(bytefmt.ByteSize(up), upColor)))
 			}
 		}, time.Second*1)
 		// time, disk
